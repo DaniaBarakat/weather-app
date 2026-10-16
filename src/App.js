@@ -7,7 +7,12 @@ import React, { useState, useEffect } from 'react';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
+// EXTERNAL LIBRARIES
 import axios from 'axios';
+import moment from 'moment';
+import "moment/min/locales"; // Import moment locales
+moment.locale("ar");
+
 const theme = createTheme({
   typography: {
     fontFamily: 'IBM',
@@ -15,6 +20,9 @@ const theme = createTheme({
 });
 
 function App() {
+  const dateAndTime = moment().format('MMMM Do YYYY, h:mm:ss a'); // Get current date and time in the desired format
+  
+  const [dataAndTime, setDataAndTime] = useState(dateAndTime);
   const [temp, setTemp] = useState({
     number: null,
     description: '',
@@ -24,7 +32,8 @@ function App() {
   });
 
   useEffect(() => {
-    const controller = new AbortController();
+    setDataAndTime(moment().format('MMMM Do YYYY, h:mm:ss a')); // Update the date and time format
+    const controller = new AbortController(); // Create an AbortController instance
 
     axios
       .get(
@@ -94,7 +103,7 @@ function App() {
                   </Typography>
 
                   <Typography variant="h5" style={{ marginRight: '20px' }}>
-                    الإثنين ١٠:٣٠ ص
+                    {dateAndTime}
                   </Typography>
                 </div>
                 {/* == CITY & TIME == */}
