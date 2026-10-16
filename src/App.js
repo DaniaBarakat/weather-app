@@ -6,7 +6,6 @@ import React, { useState, useEffect } from 'react';
 // Material UI COMPONENTS
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
-import CloudIcon from '@mui/icons-material/Cloud';
 import Button from '@mui/material/Button';
 import axios from 'axios';
 const theme = createTheme({
@@ -15,31 +14,47 @@ const theme = createTheme({
   },
 });
 
-let cancelAxios = null
-
 function App() {
-  const [temp, setTemp] = useState(null);
+  const [temp, setTemp] = useState({
+    number: null,
+    description: '',
+    icon: '',
+    min: null,
+    max: null,
+  });
 
   useEffect(() => {
+    const controller = new AbortController();
+
     axios
       .get(
         'https://api.openweathermap.org/data/2.5/weather?lat=44.34&lon=10.99&appid=a022d9f3ddc42b43948f94b5baeba68a',
-        {cancelToken: new axios.CancelToken((c) => (window.axiosCancel = c))}
+        { signal: controller.signal },
       )
       .then(function (response) {
         // handle success
         const responseTemp = Math.round(response.data.main.temp - 273.15); // Convert from Kelvin to Celsius
-        setTemp(responseTemp);
+        const min = Math.round(response.data.main.temp_min - 273.15);
+        const max = Math.round(response.data.main.temp_max - 273.15);
+        const description = response.data.weather[0].description;
+        const icon = response.data.weather[0].icon;
+        setTemp({
+          number: responseTemp,
+          description: description,
+          icon: icon,
+          min: min,
+          max: max,
+        });
       })
       .catch(function (error) {
-        console.error('Error fetching weather data:', error);
+        if (!axios.isCancel(error) && error.name !== 'CanceledError') {
+          console.error('Error fetching weather data:', error);
+        }
       });
-      return () => {
-        if (window.axiosCancel) {
-          window.axiosCancel(); // Cancel the request if the component unmounts
-          }
-        };
-        }, []);
+    return () => {
+      controller.abort(); // Cancel this effect's request on cleanup
+    };
+  }, []);
 
   return (
     <div className="App">
@@ -87,20 +102,27 @@ function App() {
                 <hr />
 
                 {/*CONTAINER OF DEGREE + CLOUD ICON */}
-                <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+                <div
+                  style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}
+                >
                   {/* DEGREE & DESCRIPTION */}
                   <div>
                     {/* TEMP */}
-                    <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <Typography variant="h1" style={{ textAlign: 'right' }}>
-                        {temp}°
+                        {temp?.number}°
                       </Typography>
-
-                      {/* TODO: TEMP IMAGE */}
+                      {temp.icon && (
+                        <img
+                          src={`https://openweathermap.org/img/wn/${temp.icon}@2x.png`}
+                          alt={temp.description || 'Weather condition'}
+                          style={{ width: '120px', height: '120px', objectFit: 'contain' }}
+                        />
+                      )}
                     </div>
                     {/* == TEMP == */}
 
-                    <Typography variant="h6">BROKEN CLOUDS</Typography>
+                    <Typography variant="h6">{temp.description}</Typography>
                     {/* MIN & MAX */}
                     <div
                       style={{
@@ -109,15 +131,13 @@ function App() {
                         alignItems: 'center',
                       }}
                     >
-                      <h5> الصغرى: 25° </h5>
+                      <h5> الصغرى: {temp.min} </h5>
                       <h5 style={{ margin: '0 5px' }}> | </h5>
-                      <h5> الكبرى: 35° </h5>
+                      <h5> الكبرى: {temp.max} </h5>
                     </div>
                     {/* == MIN & MAX == */}
                   </div>
                   {/* == DEGREE & DESCRIPTION == */}
-
-                  <CloudIcon style={{ fontSize: '200px', color: 'white' }} />
                 </div>
                 {/* == CONTAINER OF DEGREE + CLOUD ICON == */}
               </div>
