@@ -14,6 +14,9 @@ const theme = createTheme({
     fontFamily: 'IBM',
   },
 });
+
+let cancelAxios = null
+
 function App() {
   const [temp, setTemp] = useState(null);
 
@@ -21,6 +24,7 @@ function App() {
     axios
       .get(
         'https://api.openweathermap.org/data/2.5/weather?lat=44.34&lon=10.99&appid=a022d9f3ddc42b43948f94b5baeba68a',
+        {cancelToken: new axios.CancelToken((c) => (window.axiosCancel = c))}
       )
       .then(function (response) {
         // handle success
@@ -30,7 +34,12 @@ function App() {
       .catch(function (error) {
         console.error('Error fetching weather data:', error);
       });
-  }, []);
+      return () => {
+        if (window.axiosCancel) {
+          window.axiosCancel(); // Cancel the request if the component unmounts
+          }
+        };
+        }, []);
 
   return (
     <div className="App">
