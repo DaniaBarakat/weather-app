@@ -2,6 +2,27 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Weather API setup
+
+The OpenWeatherMap key is used only by the local Express server and must not be added to React code or committed to Git.
+
+1. Copy `.env.example` to `.env` in the project root.
+2. Replace the placeholder with your OpenWeatherMap API key.
+3. Run `npm start`; this starts the API server and React development server together.
+
+The React app requests weather data from `/api/weather`; in production, the Express server serves both the built React site and the weather API from one origin.
+
+### Deploy publicly with Render
+
+This app needs a Node.js web service because the OpenWeatherMap key must stay on a server. A static-only Netlify deployment of the `build` folder will not provide `/api/weather`.
+
+1. Push this project to a GitHub repository. Keep `.env` private; it is ignored by Git.
+2. In Render, create a **Blueprint** from the repository. The included `render.yaml` builds the React site and starts the Express server.
+3. In the Render service's environment settings, add `OPENWEATHER_API_KEY` with your valid OpenWeatherMap key, then deploy.
+4. Open the public `onrender.com` URL Render provides. The same service serves the website and its `/api/weather` endpoint.
+
+To preview the production build locally, run `npm run build` followed by `npm run start:prod`, then open `http://localhost:5001`.
+
 ## Available Scripts
 
 In the project directory, you can run:
